@@ -2,14 +2,11 @@ import numpy as np
 import os, sys, time, math
 from chainer import cuda
 from chainer import functions as F
-import pandas as pd
 sys.path.append(os.path.split(os.getcwd())[0])
-import dataset
 from progress import Progress
-from mnist_tools import load_train_images, load_test_images
 from model import discriminator_params, generator_params, gan
 from args import args
-from plot import plot
+from plot import plot_kde
 
 def get_learning_rate_for_epoch(epoch):
 	if epoch < 10:
@@ -41,9 +38,6 @@ def main():
 	np.random.seed(args.seed)
 	if args.gpu_device != -1:
 		cuda.cupy.random.seed(args.seed)
-
-	# save validation accuracy per epoch
-	csv_results = []
 
 	# create semi-supervised split
 	num_validation_data = 10000
