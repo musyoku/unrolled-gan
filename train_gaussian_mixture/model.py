@@ -16,9 +16,6 @@ try:
 except:
 	pass
 
-# data
-ndim_latent_code = 16
-
 # specify discriminator
 discriminator_sequence_filename = args.model_dir + "/discriminator.json"
 
@@ -36,9 +33,9 @@ else:
 	config.weight_init_std = 1
 	config.weight_initializer = "GlorotNormal"
 	config.use_weightnorm = False
-	config.nonlinearity = "softplus"
+	config.nonlinearity = "relu"
 	config.optimizer = "Adam"
-	config.learning_rate = 0.001
+	config.learning_rate = 0.01
 	config.momentum = 0.5
 	config.gradient_clipping = 10
 	config.weight_decay = 0
@@ -48,7 +45,7 @@ else:
 	discriminator = Sequential(weight_initializer=config.weight_initializer, weight_init_std=config.weight_init_std)
 	discriminator.add(Linear(config.ndim_input, 128, use_weightnorm=config.use_weightnorm))
 	discriminator.add(Activation(config.nonlinearity))
-	discriminator.add(BatchNormalization(128))
+	# discriminator.add(BatchNormalization(128))
 	if config.use_minibatch_discrimination:
 		discriminator.add(MinibatchDiscrimination(None, num_kernels=50, ndim_kernel=5))
 	discriminator.add(Linear(None, config.ndim_output, use_weightnorm=config.use_weightnorm))
@@ -77,15 +74,16 @@ if os.path.isfile(generator_sequence_filename):
 			raise Exception("could not load {}".format(generator_sequence_filename))
 else:
 	config = GeneratorParams()
-	config.ndim_input = ndim_latent_code
+	config.ndim_input = 16
 	config.ndim_output = 2
+	config.num_mixture = 8
 	config.distribution_output = "universal"
 	config.use_weightnorm = False
 	config.weight_init_std = 1
 	config.weight_initializer = "GlorotNormal"
 	config.nonlinearity = "relu"
 	config.optimizer = "Adam"
-	config.learning_rate = 0.001
+	config.learning_rate = 0.01
 	config.momentum = 0.5
 	config.gradient_clipping = 10
 	config.weight_decay = 0
@@ -93,10 +91,10 @@ else:
 	# generator
 	generator = Sequential(weight_initializer=config.weight_initializer, weight_init_std=config.weight_init_std)
 	generator.add(Linear(config.ndim_input, 128, use_weightnorm=config.use_weightnorm))
-	generator.add(BatchNormalization(128))
+	# generator.add(BatchNormalization(128))
 	generator.add(Activation(config.nonlinearity))
 	generator.add(Linear(None, 128, use_weightnorm=config.use_weightnorm))
-	generator.add(BatchNormalization(128))
+	# generator.add(BatchNormalization(128))
 	generator.add(Activation(config.nonlinearity))
 	generator.add(Linear(None, config.ndim_output, use_weightnorm=config.use_weightnorm))
 	generator.build()

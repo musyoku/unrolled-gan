@@ -107,7 +107,7 @@ def main():
 				gan.backprop_discriminator(loss_supervised + loss_unsupervised)
 
 				if k == 0:
-					gan.cache_discriminator_grads()
+					gan.cache_discriminator_weights()
 					sum_loss_supervised += float(loss_supervised.data)
 					sum_loss_unsupervised += float(loss_unsupervised.data)
 					sum_dx_labeled += float(dx_l.data)
@@ -135,7 +135,7 @@ def main():
 			gan.backprop_generator(loss_generator)
 
 			# update discriminator
-			gan.update_discriminator_with_cached_grads()
+			gan.restore_discriminator_weights()
 
 			sum_loss_adversarial += float(loss_generator.data)
 			sum_dx_generated += float(dx_g.data)
