@@ -41,7 +41,7 @@ def main():
 			# unrolling
 			for k in xrange(args.unrolling_steps):
 				# sample from data distribution
-				samples_u = gaussian_mixture(batchsize_u, generator_config.num_mixture)
+				samples_u = gaussian_mixture(batchsize_u, generator_config.num_mixture, scale=1, std=0.2)
 				samples_g = gan.generate_x(batchsize_g)
 				samples_g.unchain_backward()
 
@@ -109,7 +109,7 @@ def main():
 		})
 
 		if epoch % plot_interval == 0 or epoch == 1:
-			samples_g = gan.generate_x(batchsize_g)
+			samples_g = gan.generate_x(10000)
 			samples_g.unchain_backward()
 			samples_g = gan.to_numpy(samples_g)
 			plot_scatter(samples_g, dir=args.plot_dir, filename="scatter_epoch_{}_time_{}min".format(epoch, progress.get_total_time()))
