@@ -87,11 +87,11 @@ def main():
 				# 				= -softplus(logZ(x))
 				log_zx_u, activations_u = gan.discriminate(x_true, apply_softmax=False)
 				log_dx_u = log_zx_u - F.softplus(log_zx_u)
-				dx_u = F.sum(F.exp(log_dx_u)) / batchsize_u
-				loss_unsupervised = -F.sum(log_dx_u) / batchsize_u	# minimize negative logD(x)
+				dx_u = F.sum(F.exp(log_dx_u)) / batchsize_true
+				loss_unsupervised = -F.sum(log_dx_u) / batchsize_true	# minimize negative logD(x)
 				py_x_g, _ = gan.discriminate(x_fake, apply_softmax=False)
 				log_zx_g = F.logsumexp(py_x_g, axis=1)
-				loss_unsupervised += F.sum(F.softplus(log_zx_g)) / batchsize_u	# minimize negative log{1 - D(x)}
+				loss_unsupervised += F.sum(F.softplus(log_zx_g)) / batchsize_true	# minimize negative log{1 - D(x)}
 
 				# update discriminator
 				gan.backprop_discriminator(loss_unsupervised)
@@ -102,18 +102,18 @@ def main():
 					sum_dx_unlabeled += float(dx_u.data)
 
 			# generator loss
-			x_fake = gan.generate_x(batchsize_g)
+			x_fake = gan.generate_x(batchsize_fake)
 			log_zx_g, activations_g = gan.discriminate(x_fake, apply_softmax=False)
 			log_dx_g = log_zx_g - F.softplus(log_zx_g)
-			dx_g = F.sum(F.exp(log_dx_g)) / batchsize_g
-			loss_generator = -F.sum(log_dx_g) / batchsize_u	# minimize negative logD(x)
+			dx_g = F.sum(F.exp(log_dx_g)) / batchsize_fake
+			loss_generator = -F.sum(log_dx_g) / batchsize_true	# minimize negative logD(x)
 
 			# feature matching
 			if discriminator_config.use_feature_matching:
 				features_true = activations_u[-1]
 				features_true.unchain_backward()
-				if batchsize_u != batchsize_g:
-					x_fake = gan.generate_x(batchsize_u)
+				if batchsize_true != batchsize_fake:
+					x_fake = gan.generate_x(batchsize_true)
 					_, activations_g = gan.discriminate(x_fake, apply_softmax=False)
 				features_fake = activations_g[-1]
 				loss_generator += F.mean_squared_error(features_true, features_fake)
