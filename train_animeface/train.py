@@ -38,7 +38,7 @@ def main():
 
 	# settings
 	max_epoch = 1000
-	n_trains_per_epoch = 500
+	num_trains_per_epoch = 500
 	batchsize_true = 128
 	batchsize_fake = 128
 	plot_interval = 5
