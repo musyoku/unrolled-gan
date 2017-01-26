@@ -17,9 +17,7 @@ except:
 	pass
 
 # data
-image_width = 28
-image_height = image_width
-ndim_latent_code = 50
+ndim_latent_code = 16
 
 # specify discriminator
 discriminator_sequence_filename = args.model_dir + "/discriminator.json"
@@ -33,8 +31,8 @@ if os.path.isfile(discriminator_sequence_filename):
 			raise Exception("could not load {}".format(discriminator_sequence_filename))
 else:
 	config = ClassifierParams()
-	config.ndim_input = image_width * image_height
-	config.ndim_output = 10
+	config.ndim_input = 2
+	config.ndim_output = 1
 	config.weight_init_std = 1
 	config.weight_initializer = "GlorotNormal"
 	config.use_weightnorm = False
@@ -48,19 +46,9 @@ else:
 	config.use_minibatch_discrimination = False
 
 	discriminator = Sequential(weight_initializer=config.weight_initializer, weight_init_std=config.weight_init_std)
-	discriminator.add(gaussian_noise(std=0.3))
-	discriminator.add(Linear(config.ndim_input, 1000, use_weightnorm=config.use_weightnorm))
-	discriminator.add(gaussian_noise(std=0.5))
+	discriminator.add(Linear(config.ndim_input, 128, use_weightnorm=config.use_weightnorm))
 	discriminator.add(Activation(config.nonlinearity))
-	# discriminator.add(BatchNormalization(1000))
-	discriminator.add(Linear(None, 500, use_weightnorm=config.use_weightnorm))
-	discriminator.add(gaussian_noise(std=0.5))
-	discriminator.add(Activation(config.nonlinearity))
-	# discriminator.add(BatchNormalization(500))
-	discriminator.add(Linear(None, 250, use_weightnorm=config.use_weightnorm))
-	discriminator.add(gaussian_noise(std=0.5))
-	discriminator.add(Activation(config.nonlinearity))
-	# discriminator.add(BatchNormalization(250))
+	discriminator.add(BatchNormalization(128))
 	if config.use_minibatch_discrimination:
 		discriminator.add(MinibatchDiscrimination(None, num_kernels=50, ndim_kernel=5))
 	discriminator.add(Linear(None, config.ndim_output, use_weightnorm=config.use_weightnorm))
@@ -90,8 +78,8 @@ if os.path.isfile(generator_sequence_filename):
 else:
 	config = GeneratorParams()
 	config.ndim_input = ndim_latent_code
-	config.ndim_output = image_width * image_height
-	config.distribution_output = "tanh"
+	config.ndim_output = 2
+	config.distribution_output = "universal"
 	config.use_weightnorm = False
 	config.weight_init_std = 1
 	config.weight_initializer = "GlorotNormal"
@@ -104,17 +92,13 @@ else:
 
 	# generator
 	generator = Sequential(weight_initializer=config.weight_initializer, weight_init_std=config.weight_init_std)
-	generator.add(Linear(config.ndim_input, 500, use_weightnorm=config.use_weightnorm))
-	generator.add(BatchNormalization(500))
+	generator.add(Linear(config.ndim_input, 128, use_weightnorm=config.use_weightnorm))
+	generator.add(BatchNormalization(128))
 	generator.add(Activation(config.nonlinearity))
-	generator.add(Linear(None, 500, use_weightnorm=config.use_weightnorm))
-	generator.add(BatchNormalization(500))
+	generator.add(Linear(None, 128, use_weightnorm=config.use_weightnorm))
+	generator.add(BatchNormalization(128))
 	generator.add(Activation(config.nonlinearity))
 	generator.add(Linear(None, config.ndim_output, use_weightnorm=config.use_weightnorm))
-	if config.distribution_output == "sigmoid":
-		generator.add(Activation("sigmoid"))
-	if config.distribution_output == "tanh":
-		generator.add(Activation("tanh"))
 	generator.build()
 
 	params = {

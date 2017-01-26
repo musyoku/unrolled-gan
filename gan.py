@@ -101,6 +101,30 @@ class GAN():
 		config = self.config_discriminator
 		self.generator.setup_optimizers(config.optimizer, config.learning_rate, config.momentum)
 
+	def cache_discriminator_grads(self):
+		self.cached_grads = {}
+		self._states = {}
+		xp = self.xp
+		optimizer = self.discriminator.optimizer
+		for name, param in optimizer.target.namedparams():
+			with cuda.get_device(param.data):
+				self.cached_grads[name] = xp.copy(param.grad)
+		for key, value in optimizer._states.items():
+			self._states[key] = {}
+			for k, v in value.items():
+				self._states[key][k] = xp.copy(v)
+
+	def update_discriminator_with_cached_grads(self):
+		optimizer = self.discriminator.optimizer
+		for name, param in optimizer.target.namedparams():
+			with cuda.get_device(param.data):
+				if name not in self.cached_grads:
+					raise Exception()
+				if name not in self._states:
+					raise Exception()
+				param.grad = self.cached_grads[name]
+				optimizer.update_one(param, self._states[name])
+
 	def update_learning_rate(self, lr):
 		self.discriminator.update_learning_rate(lr)
 		self.generator.update_learning_rate(lr)
