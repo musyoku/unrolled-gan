@@ -85,7 +85,7 @@ def main():
 				# log{1 - D(x)} = log1 - log(Z(x) + 1)
 				# 				= -log(exp(log(Z(x))) + 1)
 				# 				= -softplus(logZ(x))
-				log_zx_u, activations_u = gan.discriminate(samples_u, apply_softmax=False)
+				log_zx_u, activations_u = gan.discriminate(x_true, apply_softmax=False)
 				log_dx_u = log_zx_u - F.softplus(log_zx_u)
 				dx_u = F.sum(F.exp(log_dx_u)) / batchsize_u
 				loss_unsupervised = -F.sum(log_dx_u) / batchsize_u	# minimize negative logD(x)
