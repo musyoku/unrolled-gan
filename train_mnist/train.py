@@ -48,7 +48,7 @@ def main():
 	# create semi-supervised split
 	num_validation_data = 10000
 	num_labeled_data = args.num_labeled
-	if batchsize_l > num_labeled_data:
+	if batchsize_l > num_labeled_data:	# correct labeled batchsize
 		batchsize_l = num_labeled_data
 
 	training_images_l, training_labels_l, training_images_u, validation_images, validation_labels = dataset.create_semisupervised(images, labels, num_validation_data, num_labeled_data, discriminator_config.ndim_output, seed=args.seed)
@@ -60,7 +60,7 @@ def main():
 		progress.start_epoch(epoch, max_epoch)
 		sum_loss_supervised = 0
 		sum_loss_unsupervised = 0
-		sum_loss_adversarial = 0
+		sum_loss_generator = 0
 		sum_dx_labeled = 0
 		sum_dx_unlabeled = 0
 		sum_dx_generated = 0
@@ -70,9 +70,10 @@ def main():
 		for t in xrange(num_trains_per_epoch):
 			# unrolling
 			for k in xrange(args.unrolling_steps):
-				# sample from data distribution
+				# sample true data from data distribution
 				images_l, label_onehot_l, label_ids_l = dataset.sample_labeled_data(training_images_l, training_labels_l, batchsize_l, discriminator_config.ndim_input, discriminator_config.ndim_output, binarize=False)
 				images_u = dataset.sample_unlabeled_data(training_images_u, batchsize_u, discriminator_config.ndim_input, binarize=False)
+				# sample fake data from generator
 				images_g = gan.generate_x(batchsize_g)
 				images_g.unchain_backward()
 
@@ -81,8 +82,8 @@ def main():
 				loss_supervised = F.softmax_cross_entropy(py_x_l, gan.to_variable(label_ids_l))
 
 				log_zx_l = F.logsumexp(py_x_l, axis=1)
-				log_dx_l = log_zx_l - F.softplus(log_zx_l)
-				dx_l = F.sum(F.exp(log_dx_l)) / batchsize_l
+				log_dx_l = log_zx_l - F.softplus(log_zx_l)		# logD(x)
+				dx_l = F.sum(F.exp(log_dx_l)) / batchsize_l		# D(x)
 
 				# unsupervised loss
 				# D(x) = Z(x) / {Z(x) + 1}, where Z(x) = \sum_{k=1}^K exp(l_k(x))
@@ -103,7 +104,7 @@ def main():
 				log_zx_g = F.logsumexp(py_x_g, axis=1)
 				loss_unsupervised += F.sum(F.softplus(log_zx_g)) / batchsize_u	# minimize negative log{1 - D(x)}
 
-				# update discriminator
+				# update discriminator k times
 				gan.backprop_discriminator(loss_supervised + loss_unsupervised)
 
 				if k == 0:
@@ -134,10 +135,10 @@ def main():
 			# update generator
 			gan.backprop_generator(loss_generator)
 
-			# update discriminator
+			# update discriminator with updates at k = 0
 			gan.restore_discriminator_weights()
 
-			sum_loss_adversarial += float(loss_generator.data)
+			sum_loss_generator += float(loss_generator.data)
 			sum_dx_generated += float(dx_g.data)
 			if t % 10 == 0:
 				progress.show(t, num_trains_per_epoch, {})
@@ -158,7 +159,7 @@ def main():
 		progress.show(num_trains_per_epoch, num_trains_per_epoch, {
 			"loss_l": sum_loss_supervised / num_trains_per_epoch,
 			"loss_u": sum_loss_unsupervised / num_trains_per_epoch,
-			"loss_g": sum_loss_adversarial / num_trains_per_epoch,
+			"loss_g": sum_loss_generator / num_trains_per_epoch,
 			"dx_l": sum_dx_labeled / num_trains_per_epoch,
 			"dx_u": sum_dx_unlabeled / num_trains_per_epoch,
 			"dx_g": sum_dx_generated / num_trains_per_epoch,
