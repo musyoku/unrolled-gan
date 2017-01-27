@@ -3,11 +3,11 @@ import os, sys, time, math
 from chainer import cuda
 from chainer import functions as F
 sys.path.append(os.path.split(os.getcwd())[0])
+import sampler
 from progress import Progress
 from model import discriminator_params, generator_params, gan
 from args import args
 from plot import plot_kde, plot_scatter
-from sampler import gaussian_mixture
 
 def main():
 	# config
@@ -17,8 +17,8 @@ def main():
 	# settings
 	# _u -> unlabeled
 	# _g -> generated
-	max_epoch = 1000
-	num_trains_per_epoch = 500
+	max_epoch = 50
+	num_updates_per_epoch = 500
 	plot_interval = 5
 	batchsize_u = 100
 	batchsize_g = batchsize_u
@@ -37,12 +37,13 @@ def main():
 		sum_dx_unlabeled = 0
 		sum_dx_generated = 0
 
-		for t in xrange(num_trains_per_epoch):
+		for t in xrange(num_updates_per_epoch):
 			# unrolling
 			for k in xrange(args.unrolling_steps):
 				# sample from data distribution
-				samples_u = gaussian_mixture(batchsize_u, generator_config.num_mixture, scale=1, std=0.2)
-				samples_g = gan.generate_x(batchsize_g)
+				samples_u = sampler.gaussian_mixture_circle(batchsize_u, generator_config.num_mixture, scale=2, std=0.2)
+				# sample from generator
+				samples_g = gan.generate_x(batchsize_g, from_gaussian=True)
 				samples_g.unchain_backward()
 
 				# unsupervised loss
@@ -72,7 +73,7 @@ def main():
 					sum_dx_unlabeled += float(dx_u.data)
 
 			# generator loss
-			samples_g = gan.generate_x(batchsize_g)
+			samples_g = gan.generate_x(batchsize_g, from_gaussian=True)
 			log_zx_g, activations_g = gan.discriminate(samples_g, apply_softmax=False)
 			log_dx_g = log_zx_g - F.softplus(log_zx_g)
 			dx_g = F.sum(F.exp(log_dx_g)) / batchsize_g
@@ -83,7 +84,7 @@ def main():
 				features_true = activations_u[-1]
 				features_true.unchain_backward()
 				if batchsize_u != batchsize_g:
-					samples_g = gan.generate_x(batchsize_u)
+					samples_g = gan.generate_x(batchsize_u, from_gaussian=True)
 					_, activations_g = gan.discriminate(samples_g, apply_softmax=False)
 				features_fake = activations_g[-1]
 				loss_generator += F.mean_squared_error(features_true, features_fake)
@@ -97,23 +98,27 @@ def main():
 			sum_loss_adversarial += float(loss_generator.data)
 			sum_dx_generated += float(dx_g.data)
 			if t % 10 == 0:
-				progress.show(t, num_trains_per_epoch, {})
+				progress.show(t, num_updates_per_epoch, {})
 
 		gan.save(args.model_dir)
 
-		progress.show(num_trains_per_epoch, num_trains_per_epoch, {
-			"loss_u": sum_loss_unsupervised / num_trains_per_epoch,
-			"loss_g": sum_loss_adversarial / num_trains_per_epoch,
-			"dx_u": sum_dx_unlabeled / num_trains_per_epoch,
-			"dx_g": sum_dx_generated / num_trains_per_epoch,
+		progress.show(num_updates_per_epoch, num_updates_per_epoch, {
+			"loss_u": sum_loss_unsupervised / num_updates_per_epoch,
+			"loss_g": sum_loss_adversarial / num_updates_per_epoch,
+			"dx_u": sum_dx_unlabeled / num_updates_per_epoch,
+			"dx_g": sum_dx_generated / num_updates_per_epoch,
 		})
 
 		if epoch % plot_interval == 0 or epoch == 1:
-			samples_g = gan.generate_x(10000)
+			samples_g = gan.generate_x(10000, from_gaussian=True)
 			samples_g.unchain_backward()
-			samples_g = gan.to_numpy(samples_g)
-			plot_scatter(samples_g, dir=args.plot_dir, filename="scatter_epoch_{}_time_{}min".format(epoch, progress.get_total_time()))
-			plot_kde(samples_g, dir=args.plot_dir, filename="kde_epoch_{}_time_{}min".format(epoch, progress.get_total_time()))
+			# samples_g = gan.to_numpy(samples_g) + np.random.normal(0, 0.01, samples_g.shape)	# prevent kernel density estimation from failing
+			samples_g = gan.to_numpy(samples_g)		# prevent kernel density estimation from failing
+			try:
+				plot_scatter(samples_g, dir=args.plot_dir, filename="scatter_epoch_{}_time_{}min".format(epoch, progress.get_total_time()))
+				plot_kde(samples_g, dir=args.plot_dir, filename="kde_epoch_{}_time_{}min".format(epoch, progress.get_total_time()))
+			except:
+				pass
 
 if __name__ == "__main__":
 	main()

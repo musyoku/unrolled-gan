@@ -31,7 +31,7 @@ def main():
 	# _u -> unlabeled
 	# _g -> generated
 	max_epoch = 1000
-	num_trains_per_epoch = 500
+	num_updates_per_epoch = 500
 	plot_interval = 5
 	batchsize_l = 100
 	batchsize_u = 100
@@ -67,7 +67,7 @@ def main():
 
 		gan.update_learning_rate(get_learning_rate_for_epoch(epoch))
 
-		for t in xrange(num_trains_per_epoch):
+		for t in xrange(num_updates_per_epoch):
 			# unrolling
 			for k in xrange(args.unrolling_steps):
 				# sample true data from data distribution
@@ -141,7 +141,7 @@ def main():
 			sum_loss_generator += float(loss_generator.data)
 			sum_dx_generated += float(dx_g.data)
 			if t % 10 == 0:
-				progress.show(t, num_trains_per_epoch, {})
+				progress.show(t, num_updates_per_epoch, {})
 
 		gan.save(args.model_dir)
 
@@ -156,13 +156,13 @@ def main():
 			sum_accuracy += float(accuracy.data)
 		validation_accuracy = sum_accuracy / len(images_l_segments)
 		
-		progress.show(num_trains_per_epoch, num_trains_per_epoch, {
-			"loss_l": sum_loss_supervised / num_trains_per_epoch,
-			"loss_u": sum_loss_unsupervised / num_trains_per_epoch,
-			"loss_g": sum_loss_generator / num_trains_per_epoch,
-			"dx_l": sum_dx_labeled / num_trains_per_epoch,
-			"dx_u": sum_dx_unlabeled / num_trains_per_epoch,
-			"dx_g": sum_dx_generated / num_trains_per_epoch,
+		progress.show(num_updates_per_epoch, num_updates_per_epoch, {
+			"loss_l": sum_loss_supervised / num_updates_per_epoch,
+			"loss_u": sum_loss_unsupervised / num_updates_per_epoch,
+			"loss_g": sum_loss_generator / num_updates_per_epoch,
+			"dx_l": sum_dx_labeled / num_updates_per_epoch,
+			"dx_u": sum_dx_unlabeled / num_updates_per_epoch,
+			"dx_g": sum_dx_generated / num_updates_per_epoch,
 			"accuracy": validation_accuracy,
 		})
 

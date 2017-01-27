@@ -30,12 +30,12 @@ else:
 	config = ClassifierParams()
 	config.ndim_input = 2
 	config.ndim_output = 1
-	config.weight_init_std = 1
-	config.weight_initializer = "GlorotNormal"
+	config.weight_init_std = 0.8
+	config.weight_initializer = "HeNormal"
 	config.use_weightnorm = False
 	config.nonlinearity = "relu"
 	config.optimizer = "Adam"
-	config.learning_rate = 0.01
+	config.learning_rate = 1e-4
 	config.momentum = 0.5
 	config.gradient_clipping = 10
 	config.weight_decay = 0
@@ -44,6 +44,9 @@ else:
 
 	discriminator = Sequential(weight_initializer=config.weight_initializer, weight_init_std=config.weight_init_std)
 	discriminator.add(Linear(config.ndim_input, 128, use_weightnorm=config.use_weightnorm))
+	discriminator.add(Activation(config.nonlinearity))
+	# discriminator.add(BatchNormalization(128))
+	discriminator.add(Linear(None, 128, use_weightnorm=config.use_weightnorm))
 	discriminator.add(Activation(config.nonlinearity))
 	# discriminator.add(BatchNormalization(128))
 	if config.use_minibatch_discrimination:
@@ -74,16 +77,16 @@ if os.path.isfile(generator_sequence_filename):
 			raise Exception("could not load {}".format(generator_sequence_filename))
 else:
 	config = GeneratorParams()
-	config.ndim_input = 8
+	config.ndim_input = 256
 	config.ndim_output = 2
 	config.num_mixture = 8
 	config.distribution_output = "universal"
 	config.use_weightnorm = False
-	config.weight_init_std = 1
-	config.weight_initializer = "GlorotNormal"
+	config.weight_init_std = 0.8
+	config.weight_initializer = "HeNormal"
 	config.nonlinearity = "relu"
 	config.optimizer = "Adam"
-	config.learning_rate = 0.01
+	config.learning_rate = 1e-4
 	config.momentum = 0.5
 	config.gradient_clipping = 10
 	config.weight_decay = 0

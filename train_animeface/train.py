@@ -38,7 +38,7 @@ def main():
 
 	# settings
 	max_epoch = 1000
-	num_trains_per_epoch = 500
+	num_updates_per_epoch = 500
 	batchsize_true = 128
 	batchsize_fake = 128
 	plot_interval = 5
@@ -67,7 +67,7 @@ def main():
 		sum_dx_unlabeled = 0
 		sum_dx_generated = 0
 
-		for t in xrange(num_trains_per_epoch):
+		for t in xrange(num_updates_per_epoch):
 			# unrolling
 			for k in xrange(args.unrolling_steps):
 				# sample data
@@ -127,15 +127,15 @@ def main():
 			sum_loss_adversarial += float(loss_generator.data)
 			sum_dx_generated += float(dx_g.data)
 			if t % 10 == 0:
-				progress.show(t, num_trains_per_epoch, {})
+				progress.show(t, num_updates_per_epoch, {})
 
 		gan.save(args.model_dir)
 
-		progress.show(num_trains_per_epoch, num_trains_per_epoch, {
-			"loss_u": sum_loss_unsupervised / num_trains_per_epoch,
-			"loss_g": sum_loss_adversarial / num_trains_per_epoch,
-			"dx_u": sum_dx_unlabeled / num_trains_per_epoch,
-			"dx_g": sum_dx_generated / num_trains_per_epoch,
+		progress.show(num_updates_per_epoch, num_updates_per_epoch, {
+			"loss_u": sum_loss_unsupervised / num_updates_per_epoch,
+			"loss_g": sum_loss_adversarial / num_updates_per_epoch,
+			"dx_u": sum_dx_unlabeled / num_updates_per_epoch,
+			"dx_g": sum_dx_generated / num_updates_per_epoch,
 		})
 
 		if epoch % plot_interval == 0 or epoch == 1:

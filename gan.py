@@ -159,17 +159,19 @@ class GAN():
 		self.optimizer_discriminator.zero_grads()
 		self.optimizer_generative_model.zero_grads()
 
-	def sample_z(self, batchsize=1):
+	def sample_z(self, batchsize=1, gaussian=False):
 		config = self.config_generator
 		ndim_z = config.ndim_input
-		# uniform
-		z_batch = np.random.uniform(-1, 1, (batchsize, ndim_z)).astype(np.float32)
-		# gaussian
-		# z_batch = np.random.normal(0, 1, (batchsize, ndim_z)).astype(np.float32)
+		if gaussian:
+			# gaussian
+			z_batch = np.random.normal(0, 1, (batchsize, ndim_z)).astype(np.float32)
+		else:
+			# uniform
+			z_batch = np.random.uniform(-1, 1, (batchsize, ndim_z)).astype(np.float32)
 		return z_batch
 
-	def generate_x(self, batchsize=1, test=False, as_numpy=False):
-		return self.generate_x_from_z(self.sample_z(batchsize), test=test, as_numpy=as_numpy)
+	def generate_x(self, batchsize=1, test=False, as_numpy=False, from_gaussian=False):
+		return self.generate_x_from_z(self.sample_z(batchsize, gaussian=from_gaussian), test=test, as_numpy=as_numpy)
 
 	def generate_x_from_z(self, z_batch, test=False, as_numpy=False):
 		z_batch = self.to_variable(z_batch)
