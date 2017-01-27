@@ -35,11 +35,11 @@ if os.path.isfile(discriminator_sequence_filename):
 else:
 	config = DiscriminatorParams()
 	config.weight_init_std = 0.001
-	config.weight_initializer = "Normal"
+	config.weight_initializer = "HeNormal"
 	config.use_weightnorm = False
 	config.nonlinearity = "elu"
 	config.optimizer = "Adam"
-	config.learning_rate = 0.0001
+	config.learning_rate = 0.001
 	config.momentum = 0.5
 	config.gradient_clipping = 10
 	config.weight_decay = 0
@@ -91,10 +91,10 @@ else:
 	config.distribution_output = "tanh"
 	config.use_weightnorm = False
 	config.weight_init_std = 0.001
-	config.weight_initializer = "Normal"
+	config.weight_initializer = "HeNormal"
 	config.nonlinearity = "relu"
 	config.optimizer = "Adam"
-	config.learning_rate = 0.0001
+	config.learning_rate = 0.001
 	config.momentum = 0.5
 	config.gradient_clipping = 10
 	config.weight_decay = 0

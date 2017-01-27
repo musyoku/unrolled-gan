@@ -56,7 +56,7 @@ def main():
 
 	# training
 	progress = Progress()
-	for epoch in xrange(1, max_epoch):
+	for epoch in xrange(1, max_epoch + 1):
 		progress.start_epoch(epoch, max_epoch)
 		sum_loss_supervised = 0
 		sum_loss_unsupervised = 0

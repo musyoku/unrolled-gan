@@ -2,12 +2,12 @@ import sys, time, math
 
 class Progress(object):
 	def __init__(self):
-		self.start_time = 0
-		self.epoch_start_time = 0
+		self.start_time = None
+		self.epoch_start_time = None
 
 	def start_epoch(self, current_epoch, total_epoch):
 		current = time.time()
-		if self.start_time == 0:
+		if self.start_time is None:
 			self.start_time = current
 		self.epoch_start_time = current
 		print "Epoch {}/{}".format(current_epoch, total_epoch)
@@ -27,6 +27,8 @@ class Progress(object):
 		return str
 
 	def get_total_time(self):
+		if self.start_time is None:
+			return 0
 		return int((time.time() - self.start_time) / 60)
 
 	def get_args(self, args):

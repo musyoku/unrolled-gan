@@ -74,9 +74,9 @@ if os.path.isfile(generator_sequence_filename):
 			raise Exception("could not load {}".format(generator_sequence_filename))
 else:
 	config = GeneratorParams()
-	config.ndim_input = 256
+	config.ndim_input = 16
 	config.ndim_output = 2
-	config.num_mixture = 8
+	config.num_mixture = args.num_mixture
 	config.distribution_output = "universal"
 	config.use_weightnorm = False
 	config.weight_init_std = 0.8

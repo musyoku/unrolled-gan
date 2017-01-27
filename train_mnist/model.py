@@ -5,7 +5,7 @@ from args import args
 from chainer import cuda
 sys.path.append(os.path.split(os.getcwd())[0])
 from params import Params
-from gan import GAN, ClassifierParams, GeneratorParams
+from gan import GAN, DiscriminatorParams, GeneratorParams
 from sequential import Sequential
 from sequential.layers import Linear, BatchNormalization, MinibatchDiscrimination
 from sequential.functions import Activation, dropout, gaussian_noise, softmax
@@ -32,7 +32,7 @@ if os.path.isfile(discriminator_sequence_filename):
 		except Exception as e:
 			raise Exception("could not load {}".format(discriminator_sequence_filename))
 else:
-	config = ClassifierParams()
+	config = DiscriminatorParams()
 	config.ndim_input = image_width * image_height
 	config.ndim_output = 10
 	config.weight_init_std = 1

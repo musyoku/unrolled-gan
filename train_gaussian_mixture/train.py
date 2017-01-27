@@ -27,7 +27,7 @@ def main():
 	# settings
 	# _u -> unlabeled
 	# _g -> generated
-	max_epoch = 100
+	max_epoch = 200
 	num_updates_per_epoch = 500
 	plot_interval = 5
 	batchsize_u = 100
@@ -42,7 +42,7 @@ def main():
 	# training
 	progress = Progress()
 	plot_samples(0, progress)
-	for epoch in xrange(1, max_epoch):
+	for epoch in xrange(1, max_epoch + 1):
 		progress.start_epoch(epoch, max_epoch)
 		sum_loss_unsupervised = 0
 		sum_loss_adversarial = 0
@@ -53,7 +53,7 @@ def main():
 			# unrolling
 			for k in xrange(args.unrolling_steps):
 				# sample from data distribution
-				samples_u = sampler.gaussian_mixture_circle(batchsize_u, generator_config.num_mixture, scale=scale, std=0.2)
+				samples_u = sampler.gaussian_mixture_double_circle(batchsize_u, generator_config.num_mixture, scale=scale, std=0.2)
 				# sample from generator
 				samples_g = gan.generate_x(batchsize_g, from_gaussian=True)
 				samples_g.unchain_backward()
