@@ -3,7 +3,6 @@ from chainer import cuda, Variable
 from chainer import functions as F
 
 class Function(object):
-
 	def __call__(self, x):
 		raise NotImplementedError()
 
