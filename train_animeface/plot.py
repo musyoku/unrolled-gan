@@ -1,11 +1,26 @@
 import sys, os
 import numpy as np
 sys.path.append(os.path.split(os.getcwd())[0])
-import visualizer
 from args import args
 from model import gan
 from dataset import load_rgb_images
 
+def tile_rgb_images(x, dir=None, filename="x", row=10, col=10):
+	if dir is None:
+		raise Exception()
+	try:
+		os.mkdir(dir)
+	except:
+		pass
+	fig = pylab.gcf()
+	fig.set_size_inches(col * 2, row * 2)
+	pylab.clf()
+	for m in range(row * col):
+		pylab.subplot(row, col, m + 1)
+		pylab.imshow(np.clip(x[m], 0, 1), interpolation="none")
+		pylab.axis("off")
+	pylab.savefig("{}/{}.png".format(dir, filename))
+	
 def plot(filename="gen"):
 	try:
 		os.mkdir(args.plot_dir)
