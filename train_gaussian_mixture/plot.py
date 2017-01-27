@@ -41,7 +41,7 @@ def plot_scatter(data, dir=None, filename="scatter", color="blue"):
 
 def main():
 	num_samples = 10000
-	samples_true = sampler.gaussian_mixture_circle(num_samples, num_cluster=8, scale=1, std=0.2)
+	samples_true = sampler.gaussian_mixture_circle(num_samples, num_cluster=8, scale=2, std=0.2)
 	plot_scatter(samples_true, args.plot_dir, "scatter_true.png")
 	plot_kde(samples_true, args.plot_dir, "kde_true.png")
 	samples_fake = gan.to_numpy(gan.generate_x(num_samples, test=True))
