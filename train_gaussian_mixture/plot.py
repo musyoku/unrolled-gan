@@ -17,7 +17,7 @@ def plot_kde(data, dir=None, filename="kde", color="Greens"):
 	fig.set_size_inches(16.0, 16.0)
 	pylab.clf()
 	bg_color  = sns.color_palette(color, n_colors=256)[0]
-	ax = sns.kdeplot(data[:, 0], data[:,1], shade=True, cmap=color, n_levels=20, clip=[[-4, 4]]*2)
+	ax = sns.kdeplot(data[:, 0], data[:,1], shade=True, cmap=color, n_levels=30, clip=[[-4, 4]]*2)
 	ax.set_axis_bgcolor(bg_color)
 	kde = ax.get_figure()
 	pylab.xlim(-4, 4)

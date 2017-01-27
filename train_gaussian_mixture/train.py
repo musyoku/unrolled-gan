@@ -9,6 +9,16 @@ from model import discriminator_params, generator_params, gan
 from args import args
 from plot import plot_kde, plot_scatter
 
+def plot_samples(epoch, progress):
+	samples_g = gan.generate_x(10000, from_gaussian=True)
+	samples_g.unchain_backward()
+	samples_g = gan.to_numpy(samples_g)
+	try:
+		plot_scatter(samples_g, dir=args.plot_dir, filename="scatter_epoch_{}_time_{}min".format(epoch, progress.get_total_time()))
+		plot_kde(samples_g, dir=args.plot_dir, filename="kde_epoch_{}_time_{}min".format(epoch, progress.get_total_time()))
+	except:
+		pass
+
 def main():
 	# config
 	discriminator_config = gan.config_discriminator
@@ -17,11 +27,12 @@ def main():
 	# settings
 	# _u -> unlabeled
 	# _g -> generated
-	max_epoch = 50
+	max_epoch = 100
 	num_updates_per_epoch = 500
 	plot_interval = 5
 	batchsize_u = 100
 	batchsize_g = batchsize_u
+	scale = 2.0
 
 	# seed
 	np.random.seed(args.seed)
@@ -30,6 +41,7 @@ def main():
 
 	# training
 	progress = Progress()
+	plot_samples(0, progress)
 	for epoch in xrange(1, max_epoch):
 		progress.start_epoch(epoch, max_epoch)
 		sum_loss_unsupervised = 0
@@ -41,7 +53,7 @@ def main():
 			# unrolling
 			for k in xrange(args.unrolling_steps):
 				# sample from data distribution
-				samples_u = sampler.gaussian_mixture_circle(batchsize_u, generator_config.num_mixture, scale=2, std=0.2)
+				samples_u = sampler.gaussian_mixture_circle(batchsize_u, generator_config.num_mixture, scale=scale, std=0.2)
 				# sample from generator
 				samples_g = gan.generate_x(batchsize_g, from_gaussian=True)
 				samples_g.unchain_backward()
@@ -56,12 +68,11 @@ def main():
 				# log{1 - D(x)} = log1 - log(Z(x) + 1)
 				# 				= -log(exp(log(Z(x))) + 1)
 				# 				= -softplus(logZ(x))
-				log_zx_u, activations_u = gan.discriminate(samples_u, apply_softmax=False)
+				log_zx_u, activations_u = gan.discriminate(samples_u / scale, apply_softmax=False)
 				log_dx_u = log_zx_u - F.softplus(log_zx_u)
 				dx_u = F.sum(F.exp(log_dx_u)) / batchsize_u
 				loss_unsupervised = -F.sum(log_dx_u) / batchsize_u	# minimize negative logD(x)
-				py_x_g, _ = gan.discriminate(samples_g, apply_softmax=False)
-				log_zx_g = F.logsumexp(py_x_g, axis=1)
+				log_zx_g, _ = gan.discriminate(samples_g / scale, apply_softmax=False)
 				loss_unsupervised += F.sum(F.softplus(log_zx_g)) / batchsize_u	# minimize negative log{1 - D(x)}
 
 				# update discriminator
@@ -74,7 +85,7 @@ def main():
 
 			# generator loss
 			samples_g = gan.generate_x(batchsize_g, from_gaussian=True)
-			log_zx_g, activations_g = gan.discriminate(samples_g, apply_softmax=False)
+			log_zx_g, activations_g = gan.discriminate(samples_g / scale, apply_softmax=False)
 			log_dx_g = log_zx_g - F.softplus(log_zx_g)
 			dx_g = F.sum(F.exp(log_dx_g)) / batchsize_g
 			loss_generator = -F.sum(log_dx_g) / batchsize_u	# minimize negative logD(x)
@@ -85,7 +96,7 @@ def main():
 				features_true.unchain_backward()
 				if batchsize_u != batchsize_g:
 					samples_g = gan.generate_x(batchsize_u, from_gaussian=True)
-					_, activations_g = gan.discriminate(samples_g, apply_softmax=False)
+					_, activations_g = gan.discriminate(samples_g / scale, apply_softmax=False)
 				features_fake = activations_g[-1]
 				loss_generator += F.mean_squared_error(features_true, features_fake)
 
@@ -109,16 +120,8 @@ def main():
 			"dx_g": sum_dx_generated / num_updates_per_epoch,
 		})
 
-		if epoch % plot_interval == 0 or epoch == 1:
-			samples_g = gan.generate_x(10000, from_gaussian=True)
-			samples_g.unchain_backward()
-			# samples_g = gan.to_numpy(samples_g) + np.random.normal(0, 0.01, samples_g.shape)	# prevent kernel density estimation from failing
-			samples_g = gan.to_numpy(samples_g)		# prevent kernel density estimation from failing
-			try:
-				plot_scatter(samples_g, dir=args.plot_dir, filename="scatter_epoch_{}_time_{}min".format(epoch, progress.get_total_time()))
-				plot_kde(samples_g, dir=args.plot_dir, filename="kde_epoch_{}_time_{}min".format(epoch, progress.get_total_time()))
-			except:
-				pass
+		if epoch % plot_interval == 0:
+			plot_samples(epoch, progress)
 
 if __name__ == "__main__":
 	main()
