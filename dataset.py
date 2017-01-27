@@ -38,6 +38,9 @@ def load_rgb_images(image_dir):
 def load_rgba_images(image_dir):
 	return _load_images(image_dir, "RGBA")
 
-def binarize_data(x):
-	threshold = np.random.uniform(size=x.shape)
-	return np.where(threshold < x, 1.0, 0.0).astype(np.float32)
+def binarize_data(x, sampling=True, threshold=None):
+	if sampling:
+		threshold = np.random.uniform(size=x.shape)
+	if threshold is None:
+		raise Exception()
+	return np.where(threshold < x, 1.0, 0.0).astype(np.float32)	

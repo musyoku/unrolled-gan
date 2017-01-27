@@ -1,7 +1,6 @@
 import sys, time, math
 
 class Progress(object):
-
 	def __init__(self):
 		self.start_time = 0
 		self.epoch_start_time = 0
