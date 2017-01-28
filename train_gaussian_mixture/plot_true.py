@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sampler, pylab, os
 import seaborn as sns
-from model import discriminator_params, generator_params, gan
 from args import args
 sns.set(font_scale=2)
 sns.set_style("white")
@@ -22,7 +21,7 @@ def plot_kde(data, dir=None, filename="kde", color="Greens"):
 	kde = ax.get_figure()
 	pylab.xlim(-4, 4)
 	pylab.ylim(-4, 4)
-	kde.savefig("{}/{}.png".format(dir, filename))
+	kde.savefig("{}/{}".format(dir, filename))
 
 def plot_scatter(data, dir=None, filename="scatter", color="blue"):
 	if dir is None:
@@ -37,16 +36,13 @@ def plot_scatter(data, dir=None, filename="scatter", color="blue"):
 	pylab.scatter(data[:, 0], data[:, 1], s=20, marker="o", edgecolors="none", color=color)
 	pylab.xlim(-4, 4)
 	pylab.ylim(-4, 4)
-	pylab.savefig("{}/{}.png".format(dir, filename))
+	pylab.savefig("{}/{}".format(dir, filename))
 
 def main():
 	num_samples = 10000
-	samples_true = sampler.gaussian_mixture_circle(num_samples, num_cluster=generator_params["config"]["num_mixture"], scale=2, std=0.2)
+	samples_true = sampler.gaussian_mixture_circle(num_samples, num_cluster=args.num_mixture, scale=2, std=0.2)
 	plot_scatter(samples_true, args.plot_dir, "scatter_true")
 	plot_kde(samples_true, args.plot_dir, "kde_true")
-	samples_fake = gan.to_numpy(gan.generate_x(num_samples, test=True))
-	plot_scatter(samples_fake, args.plot_dir, "scatter_gen")
-	plot_kde(samples_fake, args.plot_dir, "kde_gen")
 
 if __name__ == "__main__":
 	main()

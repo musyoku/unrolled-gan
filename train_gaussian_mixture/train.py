@@ -120,7 +120,7 @@ def main():
 			"dx_g": sum_dx_generated / num_updates_per_epoch,
 		})
 
-		if epoch % plot_interval == 0:
+		if epoch % plot_interval == 0 or epoch == 1:
 			plot_samples(epoch, progress)
 
 if __name__ == "__main__":

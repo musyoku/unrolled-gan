@@ -9,15 +9,6 @@ from args import args
 from dataset import load_rgb_images
 from plot import plot
 
-class Object(object):
-	pass
-
-def to_object(dict):
-	obj = Object()
-	for key, value in dict.iteritems():
-		setattr(obj, key, value)
-	return obj
-
 def sample_from_data(images, batchsize):
 	example = images[0]
 	height = example.shape[1]
