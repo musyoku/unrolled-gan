@@ -64,8 +64,6 @@ else:
 	if config.use_minibatch_discrimination:
 		discriminator.add(MinibatchDiscrimination(None, num_kernels=50, ndim_kernel=5))
 	discriminator.add(Linear(None, config.ndim_output, use_weightnorm=config.use_weightnorm))
-	# no need to add softmax() here
-	discriminator.build()
 
 	params = {
 		"config": config.to_dict(),
@@ -115,7 +113,6 @@ else:
 		generator.add(Activation("sigmoid"))
 	if config.distribution_output == "tanh":
 		generator.add(Activation("tanh"))
-	generator.build()
 
 	params = {
 		"config": config.to_dict(),

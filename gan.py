@@ -88,15 +88,13 @@ class GAN():
 
 	def cache_discriminator_weights(self):
 		self.cached_weights = {}
-		xp = self.xp
-		optimizer = self.discriminator.optimizer
-		for name, param in optimizer.target.namedparams():
+		for name, param in self.discriminator.namedparams():
 			with cuda.get_device(param.data):
+				xp = cuda.get_array_module(param.data)
 				self.cached_weights[name] = xp.copy(param.data)
 
 	def restore_discriminator_weights(self):
-		optimizer = self.discriminator.optimizer
-		for name, param in optimizer.target.namedparams():
+		for name, param in self.discriminator.namedparams():
 			with cuda.get_device(param.data):
 				if name not in self.cached_weights:
 					raise Exception()
