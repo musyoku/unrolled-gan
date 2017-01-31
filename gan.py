@@ -138,10 +138,6 @@ class GAN():
 	def get_batchsize(self, x):
 		return x.shape[0]
 
-	def zero_grads(self):
-		self.optimizer_discriminator.zero_grads()
-		self.optimizer_generative_model.zero_grads()
-
 	def sample_z(self, batchsize=1, gaussian=False):
 		config = self.config_generator
 		ndim_z = config.ndim_input
@@ -175,29 +171,6 @@ class GAN():
 
 	def backprop_generator(self, loss):
 		self.generator.backprop(loss)
-
-
-	def compute_kld(self, p, q):
-		return F.reshape(F.sum(p * (F.log(p + 1e-16) - F.log(q + 1e-16)), axis=1), (-1, 1))
-
-	def get_unit_vector(self, v):
-		v /= (np.sqrt(np.sum(v ** 2, axis=1)).reshape((-1, 1)) + 1e-16)
-		return v
-
-	def compute_lds(self, x, xi=10, eps=1, Ip=1):
-		x = self.to_variable(x)
-		y1, _ = self.discriminate(x, apply_softmax=True)
-		y1.unchain_backward()
-		d = self.to_variable(self.get_unit_vector(np.random.normal(size=x.shape).astype(np.float32)))
-		
-		for i in xrange(Ip):
-			y2, _ = self.discriminate(x + xi * d, apply_softmax=True)
-			kld = F.sum(self.compute_kld(y1, y2))
-			kld.backward()
-			d = self.to_variable(self.get_unit_vector(self.to_numpy(d.grad)))
-		
-		y2, _ = self.discriminate(x + eps * d, apply_softmax=True)
-		return -self.compute_kld(y1, y2)
 
 	def load(self, dir=None):
 		if dir is None:
