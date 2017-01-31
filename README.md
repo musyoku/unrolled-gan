@@ -19,4 +19,4 @@
 
 ![image](http://musyoku.github.io/images/post/2017-01-29/5_epoch_300_time_3368min.png)
 
-![image](http://musyoku.github.io/images/post/2017-01-29/analogy_5.png)
+![image](https://github.com/musyoku/musyoku.github.io/blob/master/images/post/2017-01-29/analogy_5.png?raw=true)
