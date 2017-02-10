@@ -46,6 +46,7 @@ else:
 	config.weight_decay = 0
 	config.use_feature_matching = False
 	config.use_minibatch_discrimination = False
+	config.unrolling_steps = args.unrolling_steps
 
 	discriminator = Sequential(weight_initializer=config.weight_initializer, weight_init_std=config.weight_init_std)
 	discriminator.add(gaussian_noise(std=0.3))

@@ -45,6 +45,7 @@ class DiscriminatorParams(Params):
 		self.momentum = 0.5
 		self.gradient_clipping = 10
 		self.weight_decay = 0
+		self.unrolling_steps = 5
 		self.use_feature_matching = False
 		self.use_minibatch_discrimination = False
 

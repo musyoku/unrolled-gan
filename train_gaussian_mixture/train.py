@@ -51,7 +51,7 @@ def main():
 
 		for t in xrange(num_updates_per_epoch):
 			# unrolling
-			for k in xrange(args.unrolling_steps):
+			for k in xrange(discriminator_config.unrolling_steps):
 				# sample from data distribution
 				samples_u = sampler.gaussian_mixture_double_circle(batchsize_u, generator_config.num_mixture, scale=scale, std=0.2)
 				# sample from generator

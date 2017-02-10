@@ -69,7 +69,7 @@ def main():
 
 		for t in xrange(num_updates_per_epoch):
 			# unrolling
-			for k in xrange(args.unrolling_steps):
+			for k in xrange(discriminator_config.unrolling_steps):
 				# sample true data from data distribution
 				images_l, label_onehot_l, label_ids_l = dataset.sample_labeled_data(training_images_l, training_labels_l, batchsize_l, discriminator_config.ndim_input, discriminator_config.ndim_output, binarize=False)
 				images_u = dataset.sample_unlabeled_data(training_images_u, batchsize_u, discriminator_config.ndim_input, binarize=False)

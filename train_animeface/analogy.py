@@ -14,20 +14,7 @@ def run_method_1():
 	num_col = 10
 	num_generation = 20
 	batchsize = 2 * num_generation
-	base_z = gan.to_variable(gan.sample_z(batchsize))
-
-	# optimize z
-	class_true = gan.to_variable(np.zeros(batchsize, dtype=np.int32))
-	for n in xrange(5):
-		x_fake = gan.generate_x_from_z(base_z, test=True, as_numpy=False)
-		discrimination_fake, _ = gan.discriminate(x_fake, apply_softmax=False, test=True)
-		cross_entropy = F.softmax_cross_entropy(discrimination_fake, class_true)
-		gan.backprop_generator(cross_entropy)
-		base_z = gan.to_variable(base_z.data + base_z.grad * 0.01)
-	base_z = gan.to_numpy(base_z)
-	sum_z = np.sum(base_z)
-	if sum_z != sum_z:
-		raise Exception("NaN")
+	base_z = gan.sample_z(batchsize)
 
 	mix_z = np.zeros((num_col * num_generation, generator_config.ndim_input), dtype=np.float32)
 	for g in xrange(num_generation):

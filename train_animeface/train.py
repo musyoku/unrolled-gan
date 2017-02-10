@@ -60,7 +60,7 @@ def main():
 
 		for t in xrange(num_updates_per_epoch):
 			# unrolling
-			for k in xrange(args.unrolling_steps):
+			for k in xrange(discriminator_config.unrolling_steps):
 				# sample data
 				x_true = sample_from_data(images, batchsize_true)
 				x_fake = gan.generate_x(batchsize_fake)

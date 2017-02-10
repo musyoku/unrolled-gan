@@ -43,6 +43,7 @@ else:
 	config.momentum = 0.5
 	config.gradient_clipping = 10
 	config.weight_decay = 0
+	config.unrolling_steps = args.unrolling_steps
 	config.use_feature_matching = False
 	config.use_minibatch_discrimination = False
 
